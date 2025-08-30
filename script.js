@@ -109,31 +109,37 @@ function formatCardBack(data) {
   }
 
   let examples = [];
+  const allowedPOS = new Set(['noun', 'adverb', 'verb', 'adjective']);
+  let hasContent = false; // Flag to check if any content is added
 
   data.forEach(entry => {
     entry.meanings.forEach(meaning => {
-      html += `<div class="pos-section">`;
-      html += `<h4>${meaning.partOfSpeech}</h4>`;
-      const definitionsToShow = meaning.definitions.slice(0, 2);
-      definitionsToShow.forEach((def, index) => {
-        html += `<div class="definition">`;
-        html += `<p><b>${index + 1}.</b> ${def.definition}</p>`;
-        if (def.example) {
-          examples.push(def.example);
-        }
-        if (def.synonyms && def.synonyms.length > 0) {
-          html += `<p><b>Synonyms:</b> ${def.synonyms.join(", ")}</p>`;
-        }
-        if (def.antonyms && def.antonyms.length > 0) {
-          html += `<p><b>Antonyms:</b> ${def.antonyms.join(", ")}</p>`;
-        }
+      const pos = meaning.partOfSpeech.toLowerCase();
+      if (allowedPOS.has(pos)) {
+        hasContent = true;
+        html += `<div class="pos-section">`;
+        html += `<h4>${meaning.partOfSpeech}</h4>`;
+        const definitionsToShow = meaning.definitions.slice(0, 2);
+        definitionsToShow.forEach((def, index) => {
+          html += `<div class="definition">`;
+          html += `<p><b>${index + 1}.</b> ${def.definition}</p>`;
+          if (def.example) {
+            examples.push(def.example);
+          }
+          if (def.synonyms && def.synonyms.length > 0) {
+            html += `<p><b>Synonyms:</b> ${def.synonyms.join(", ")}</p>`;
+          }
+          if (def.antonyms && def.antonyms.length > 0) {
+            html += `<p><b>Antonyms:</b> ${def.antonyms.join(", ")}</p>`;
+          }
+          html += `</div>`;
+        });
         html += `</div>`;
-      });
-      html += `</div>`;
+      }
     });
   });
 
-  if (examples.length > 0) {
+  if (examples.length > 0 && hasContent) { // Only show examples if there's other content
     html += `<div class="examples-section">`;
     html += `<h4>Examples</h4>`;
     const examplesToShow = examples.slice(0, 2);
@@ -143,7 +149,11 @@ function formatCardBack(data) {
     html += `</div>`;
   }
 
-  return html.trim() || "No detailed info.";
+  if (!hasContent) {
+    return "No definition available for this type of word.";
+  }
+
+  return html.trim();
 }
 
 
