@@ -80,3 +80,35 @@ body {
       max-width: 800px;
       margin: auto;
     }
+
+.pos-section {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.pos-section h4 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.definition {
+  margin-bottom: 1rem;
+}
+
+.definition p {
+  margin-bottom: 0.5rem;
+}
+
+.examples-section {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.examples-section h4 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}

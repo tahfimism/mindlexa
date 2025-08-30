@@ -39,18 +39,18 @@ function processText() {
   const uniqueWords = [];
   const seenLemmas = new Set();
 
-  doc.terms().out('array').forEach(word => {
+  doc.terms().forEach(term => {
+    const word = term.text();
     if (!/^[a-zA-Z]+$/.test(word)) {
       return; // Skip punctuation and other non-word terms
     }
 
-    const term = nlp(word);
     let lemma = term.verbs().toInfinitive().out('text') || term.nouns().toSingular().out('text') || word;
     lemma = lemma.toLowerCase();
 
     if (!seenLemmas.has(lemma) && !ignoredWords.has(word.toLowerCase())) {
       seenLemmas.add(lemma);
-      uniqueWords.push(lemma); // Push the lemma instead of the original word
+      uniqueWords.push(lemma);
     }
   });
 
@@ -103,13 +103,47 @@ async function flipCard() {
 
 // Format data for display
 function formatCardBack(data) {
-  let text = "";
-  if (data.pos) text += `Part of Speech: ${data.pos}\n\n`;
-  if (data.meaning) text += `Meaning: ${data.meaning}\n\n`;
-  if (data.synonyms?.length) text += `Synonyms: ${data.synonyms.join(", ")}\n\n`;
-  if (data.antonyms?.length) text += `Antonyms: ${data.antonyms.join(", ")}\n\n`;
-  if (data.examples?.length) text += `Example: ${data.examples[0]}\n\n`;
-  return text.trim() || "No detailed info.";
+  let html = "";
+  if (!data || data.title === "No Definitions Found") {
+    return "❌ No data found.";
+  }
+
+  let examples = [];
+
+  data.forEach(entry => {
+    entry.meanings.forEach(meaning => {
+      html += `<div class="pos-section">`;
+      html += `<h4>${meaning.partOfSpeech}</h4>`;
+      const definitionsToShow = meaning.definitions.slice(0, 2);
+      definitionsToShow.forEach((def, index) => {
+        html += `<div class="definition">`;
+        html += `<p><b>${index + 1}.</b> ${def.definition}</p>`;
+        if (def.example) {
+          examples.push(def.example);
+        }
+        if (def.synonyms && def.synonyms.length > 0) {
+          html += `<p><b>Synonyms:</b> ${def.synonyms.join(", ")}</p>`;
+        }
+        if (def.antonyms && def.antonyms.length > 0) {
+          html += `<p><b>Antonyms:</b> ${def.antonyms.join(", ")}</p>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div>`;
+    });
+  });
+
+  if (examples.length > 0) {
+    html += `<div class="examples-section">`;
+    html += `<h4>Examples</h4>`;
+    const examplesToShow = examples.slice(0, 2);
+    examplesToShow.forEach(example => {
+      html += `<p><em>${example}</em></p>`;
+    });
+    html += `</div>`;
+  }
+
+  return html.trim() || "No detailed info.";
 }
 
 
@@ -123,23 +157,8 @@ async function fetchMeaning(word) {
     if (!res.ok) return null;
 
     const json = await res.json();
-    const first = json[0];
-    const meaningEntry = first.meanings?.[0]; // first meaning object
-
-    if (!meaningEntry) return null;
-
-    const defs = meaningEntry.definitions?.[0];
-
-    const result = {
-      pos: meaningEntry.partOfSpeech || "",               // Part of speech
-      meaning: defs?.definition || "",
-      synonyms: defs?.synonyms || [],
-      antonyms: defs?.antonyms || [],
-      examples: defs?.example ? [defs.example] : []
-    };
-
-    wordCache.set(word, result);
-    return result;
+    wordCache.set(word, json);
+    return json;
   } catch (e) {
     return null;
   }
