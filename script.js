@@ -1,4 +1,4 @@
- const ignoredWords = new Set([
+const ignoredWords = new Set([
   // Articles & Determiners
   "a", "an", "the", "this", "that", "these", "those", "some", "any", "each", "every", "either", "neither",
 
@@ -27,17 +27,32 @@
   "not", "no", "yes", "if", "than", "then", "as", "such", "just", "only", "also", "too", "very", "more", "most", "much", "many", "fewer", "less", "few", "now", "still", "yet", "even", "once", "ever", "never", "already"
 ]);
 
-
-
 let cardData = [];
 let currentIndex = 0;
 const wordCache = new Map();
 
 // Clean, tokenize, filter, and populate cardData
 function processText() {
-  const text = document.getElementById("textInput").value.toLowerCase();
-  const words = text.match(/\b[a-z]+\b/g) || [];
-  const uniqueWords = [...new Set(words)].filter(w => !ignoredWords.has(w));
+  const text = document.getElementById("textInput").value;
+  const doc = nlp(text);
+
+  const uniqueWords = [];
+  const seenLemmas = new Set();
+
+  doc.terms().out('array').forEach(word => {
+    if (!/^[a-zA-Z]+$/.test(word)) {
+      return; // Skip punctuation and other non-word terms
+    }
+
+    const term = nlp(word);
+    let lemma = term.verbs().toInfinitive().out('text') || term.nouns().toSingular().out('text') || word;
+    lemma = lemma.toLowerCase();
+
+    if (!seenLemmas.has(lemma) && !ignoredWords.has(word.toLowerCase())) {
+      seenLemmas.add(lemma);
+      uniqueWords.push(lemma); // Push the lemma instead of the original word
+    }
+  });
 
   cardData = uniqueWords.map(word => ({
     word,
@@ -169,4 +184,3 @@ function ignoreCurrentWord() {
 function resetFlip() {
   document.getElementById("card").classList.remove("flip");
 }
-
