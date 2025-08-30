@@ -25,15 +25,15 @@
   <div id="status"></div>
 
   <div class="card-container mt-4">
-    <div class="flashcard" id="card" onclick="flipCard()">
-      <div class="card-face front" id="cardFront">Word</div>
-      <div class="card-face back" id="cardBack">Details</div>
-    </div>
-
     <div class="btn-group">
       <button class="btn btn-outline-secondary" onclick="prevCard()">Previous</button>
       <button class="btn btn-outline-danger" onclick="ignoreCurrentWord()">Ignore This Word</button>
       <button class="btn btn-outline-secondary" onclick="nextCard()">Next</button>
+    </div>
+
+    <div class="flashcard" id="card" onclick="flipCard()">
+      <div class="card-face front" id="cardFront">Word</div>
+      <div class="card-face back" id="cardBack">Details</div>
     </div>
   </div>
 </div>
