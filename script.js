@@ -35,6 +35,7 @@ const wordCache = new Map();
 function processText() {
   const text = document.getElementById("textInput").value;
   const doc = nlp(text);
+  doc.compute('root');
 
   const uniqueWords = [];
   const seenLemmas = new Set();
@@ -45,8 +46,18 @@ function processText() {
       return; // Skip punctuation and other non-word terms
     }
 
-    let lemma = term.verbs().toInfinitive().out('text') || term.nouns().toSingular().out('text') || word;
-    lemma = lemma.toLowerCase();
+    // Try root first
+    let lemma = term.text('root') || term.verbs().toInfinitive().out('text') || term.nouns().toSingular().out('text');
+
+    // Fallback: if no lemma found or lemma equals word, and word looks like it could be a verb form
+    if ((!lemma || lemma === word) && (word.endsWith('ing') || word.endsWith('ed') || word.endsWith('s'))) {
+      const verbDoc = nlp(word).verbs().toInfinitive();
+      if (verbDoc.found) {
+        lemma = verbDoc.out('text');
+      }
+    }
+
+    lemma = (lemma || word).toLowerCase();
 
     if (!seenLemmas.has(lemma) && !ignoredWords.has(word.toLowerCase())) {
       seenLemmas.add(lemma);
@@ -66,6 +77,13 @@ function processText() {
   } else {
     document.getElementById("status").innerText = `Found ${cardData.length} unique words. Click the card to load meaning.`;
     updateCardDisplay();
+    // Auto-scroll to card container
+    setTimeout(() => {
+      const container = document.getElementById('cardContainer');
+      if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300);
   }
 }
 
@@ -117,20 +135,20 @@ function formatCardBack(data) {
       const pos = meaning.partOfSpeech.toLowerCase();
       if (allowedPOS.has(pos)) {
         hasContent = true;
-        html += `<div class="pos-section">`;
-        html += `<h4>${meaning.partOfSpeech}</h4>`;
+        html += `<div class="pos-section mb-0 text-left flex flex-col items-start">`;
+        html += `<h4 class="font-bold mb-4 border-b border-gray-300 pb-2">${meaning.partOfSpeech}</h4>`;
         const definitionsToShow = meaning.definitions.slice(0, 2);
         definitionsToShow.forEach((def, index) => {
-          html += `<div class="definition">`;
-          html += `<p><b>${index + 1}.</b> ${def.definition}</p>`;
+          html += `<div class="definition mb-4">`;
+          html += `<p class="mb-0.5 leading-tight"><b>${index + 1}.</b> ${def.definition}</p>`;
           if (def.example) {
             examples.push(def.example);
           }
           if (def.synonyms && def.synonyms.length > 0) {
-            html += `<p><b>Synonyms:</b> ${def.synonyms.join(", ")}</p>`;
+            html += `<p class="mb-0.5 leading-tight"><b>Synonyms:</b> ${def.synonyms.join(", ")}</p>`;
           }
           if (def.antonyms && def.antonyms.length > 0) {
-            html += `<p><b>Antonyms:</b> ${def.antonyms.join(", ")}</p>`;
+            html += `<p class="mb-0.5 leading-tight"><b>Antonyms:</b> ${def.antonyms.join(", ")}</p>`;
           }
           html += `</div>`;
         });
@@ -140,11 +158,11 @@ function formatCardBack(data) {
   });
 
   if (examples.length > 0 && hasContent) { // Only show examples if there's other content
-    html += `<div class="examples-section">`;
-    html += `<h4>Examples</h4>`;
+    html += `<div class="examples-section mt-6 text-left">`;
+    html += `<h4 class="font-bold mb-4 border-b border-gray-300 pb-2">Examples</h4>`;
     const examplesToShow = examples.slice(0, 2);
     examplesToShow.forEach(example => {
-      html += `<p><em>${example}</em></p>`;
+      html += `<p class="leading-tight"><em>${example}</em></p>`;
     });
     html += `</div>`;
   }
