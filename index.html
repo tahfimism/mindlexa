@@ -17,10 +17,28 @@
   <div class="blob blob-3"></div>
 </div>
 
-<div class="container position-relative">
-  <h2 class="text-center mb-4">🧠 Smart Vocabulary Flashcards</h2>
+<nav>
+  <div class="container nav-content">
+    <div class="logo">MindLexa</div>
+    <div class="nav-links">
+      <a href="#input">Create</a>
+      <a href="#flashcards">Flashcards</a>
+      <a href="https://github.com/tahfimism/mindlexa" target="_blank">GitHub</a>
+    </div>
+  </div>
+</nav>
 
-  <div class="input-section">
+<header class="hero">
+  <div class="container">
+    <h1>Smart Vocabulary Flashcards</h1>
+    <p>Transform text into smart vocabulary flashcards instantly. Powered by natural language processing.</p>
+    <a href="#input" class="btn btn-primary mt-4">Get Started</a>
+  </div>
+</header>
+
+<div class="container position-relative">
+
+  <div class="input-section" id="input">
     <label for="textInput" class="form-label">Paste your text:</label>
     <textarea class="form-control mb-3" id="textInput" rows="5" placeholder="Paste a paragraph or article..."></textarea>
     <div class="d-grid gap-2">
@@ -30,7 +48,7 @@
 
   <div id="status"></div>
 
-  <div class="card-container mt-4">
+  <div class="card-container mt-4" id="flashcards">
     <div class="btn-group">
       <button class="btn btn-outline-secondary" onclick="prevCard()">Previous</button>
       <button class="btn btn-outline-danger" onclick="ignoreCurrentWord()">Ignore This Word</button>
